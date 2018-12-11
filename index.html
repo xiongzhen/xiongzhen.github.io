@@ -249,6 +249,173 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xiongzhen.github.io/2018/11/13/Dataset Accessing in Origin C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="XIONG Zhen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="XIONG Zhen">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/13/Dataset Accessing in Origin C/" itemprop="url">Dataset Accessing in Origin C</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-11-13T00:00:00+08:00">
+                2018-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk the scripting language, Origin C the ANSI C closely based programming language with C++ features, or Python the popular and convenient tool. In this post, I would described the most basic operations using Origin C: how to access dataset. It is targeted at whoever has experience in C/C++ programming and is familiar with Origin.</p>
+<h3 id="Dataset"><a href="#Dataset" class="headerlink" title="Dataset"></a>Dataset</h3><p>Before starting out to write codes, it would be helpful to understand what “dataset” means in Origin. Typically, there are two kinds of datasets: one that you can see directly in a view, either a Worksheet or a Matrix Sheet, which is called <code>associated dataset</code> or <code>dataset</code> for convenience; the other is call <code>loose dataset</code> which is not associated with any view.</p>
+<p>You can list all datasets by LabTalk command <code>list s</code> where <code>s</code> is short for <code>series</code> now known as <code>dataset</code>:</p>
+<pre>
+list s;
+
+ 1 Book1_A     <addr>0x0000000006040008  <uid>0
+*2 Book1_B     <addr>0x0000000006040170  <uid>0
+*3 MBook1      <addr>0x00000000060402D8  <uid>0
+*4 MBook1_2    <addr>0x0000000006040440  <uid>0
+ 5 Book1_A@2   <addr>0x00000000060405A8  <uid>0
+*6 Book1_B@2   <addr>0x0000000006040710  <uid>0
+ 7 XS          <addr>0x00000000060409E0  <uid>0
+*8 MBook1@2    <addr>0x0000000006040B48  <uid>0
+*9 MBook1_2@2  <addr>0x0000000006040CB0  <uid>0
+
+Session:
+ 10            YS   4:{4, 3, 2, 1}
+</uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></pre>
+
+<p>To refer to a particular dataset in Origin C, you can create an instance of <code>Dataset</code>, one of the composite data types supported, with the corresponding name:</p>
+<p><code>Dataset ds(&quot;Book1_A&quot;)</code></p>
+<p>However, <code>Dataset</code> is not recommended. It does not support string array well. For example, in the above example, if “Book1_A” refers to a worksheet column of text type, ds is invalid. It’s also important to tell if a dataset in session scope or in project scope, to get the worksheet column a dataset belongs to, etc. In practice, the following classes are recommended to access dataset in Origin C:</p>
+<ol>
+<li>DataObject<br>An instance of <code>DataObject</code> is something you can see directly in your Origin project, for example, a worksheet column and a matrix. You cannot create such instances referring to loose datasets.<div style="color:blue">Given a DataObject instance, you can always create an instance of DatasetObject and get its data as vector/matrix. However, the opposite is not guarantteed. Such case we will discuss later.</div></li>
+<li>DatasetObject<br>You may take it as an alias of <code>Dataset</code>. However, it supports more operation like masking/unmasking data and provides access to non numeric datasets, etc. It’s always possible to create an <code>DatasetObject</code> instance referring to a dataset, be it loose dataset or not.<div style="color:blue">Given a DatasetObject instance, you can get the corresponding DataObject instance only if it’s not a loose dataset. It’s always possible to get its data as vector/matrix.</div></li>
+<li>vector and matrix<br>These are classes about composite data type, while the above two are internal Origin objects. Vector and matrix focus more on “data” itself. In other words, mathematical operations.<br><div style="color:blue">Given a vector/matrix, you can create an instance of DatasetObject from it but it’s impossible to find its corresponding instance of DataObject.</div>This is reasonable. If a vector/matrix refers to an instance of DataObject, it must be created explicitly. You should pass an DataObject instead of a vector/matrix.</li>
+</ol>
+<h4 id="DataObject"><a href="#DataObject" class="headerlink" title="DataObject"></a>DataObject</h4><p>Class DataObject is derived from class DataObjectBase, containing only one dataset. Derived from class DataObjectBase as well is class DataPlot, which may have multiple datasets. I’ll write another post to discuss it. Right now, just focus on one <code>dataset</code>.</p>
+<p>In most cases, data in a project is saved as either columns in worksheet or matrices in matrix sheet, they are call <code>Column</code> and <code>MatrixObject</code> respectively.</p>
+<p>For those who are not familar with the class hierarchy of Origin C, it might be confusing to understand <code>Column</code> or <code>MatrixObject</code>.</p>
+<ol>
+<li>Typically, a window in Origin is called a Page. The a spreadsheet with columns are called <code>WorksheetPage</code> while a sheet with matrices are called <code>MatrixPage</code>.</li>
+<li>Both <code>WorksheetPage</code> and <code>MatrixPage</code> can have more than one <code>Layer</code>, they are called <code>Worksheet</code> and <code>MatrixLayer</code> respectively.</li>
+<li>Each <code>Layer</code> can hold more than one datasets. In <code>Worksheet</code>, it’s called <code>Column</code> holding 1-D dataset. In <code>MatrixLayer</code>, it’s called <code>MatrixObject</code> holding 2-D dataset.</li>
+</ol>
+<p>Usually, to create a <code>Column</code> object or a <code>MatrixObject</code>, You should first have the corresponding <code>Layer</code> object. I list most commonly used cases as following:</p>
+<ol>
+<li>Given the <code>Layer</code> object<pre>
+<div style="color:green">// Worksheet wks</div>Column col(wks, 0);  <span style="color:green">// Get the first column of wks as col</span>
+<div></div>
+<div style="color:green">// MatrixLayer ml;</div>MatrixObject mo(ml, 0);  <span style="color:green">// Get the first matrix object of ml as mo</span>
+</pre>
+
+
+
+</li>
+</ol>
+<h4 id="DatasetObject"><a href="#DatasetObject" class="headerlink" title="DatasetObject"></a>DatasetObject</h4><h4 id="vector-amp-matrix"><a href="#vector-amp-matrix" class="headerlink" title="vector &amp; matrix"></a>vector &amp; matrix</h4>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://xiongzhen.github.io/2018/01/14/光/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1219,127 +1386,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xiongzhen.github.io/2016/10/03/Late-Summer-Memory/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="XIONG Zhen">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="XIONG Zhen">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/10/03/Late-Summer-Memory/" itemprop="url">Late Summer Memory</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2016-10-03T00:00:00+08:00">
-                2016-10-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>大学城。</p>
-<p><img src="https://img.nikonsrc.com/image/IsDqx0NQjJEK4auyZM_CD0AFkee9s3Y7AWTanMPcicuasNxvhR1SQvXdj13OBEl5UvMF2YvsSiFi_pWM54Un4Q/item.JPG" alt="Late Summer Memory"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://xiongzhen.github.io/2016/10/03/广州塔-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1501,7 +1547,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">59</span>
+                  <span class="site-state-item-count">60</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1514,7 +1560,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
