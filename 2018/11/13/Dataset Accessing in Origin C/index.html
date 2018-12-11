@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="XIONG Zhen">
 <meta property="og:description" content="More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-12-11T09:55:14.487Z">
+<meta property="og:updated_time" content="2018-12-11T10:05:14.400Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dataset Accessing in Origin C">
 <meta name="twitter:description" content="More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk">
@@ -362,9 +362,11 @@ Session:
 <div style="color:green">// Worksheet wks</div>Column col(wks, 0);  <span style="color:green">// Get the first column of wks as col</span>
 <div></div>
 <div style="color:green">// MatrixLayer ml;</div>MatrixObject mo(ml, 0);  <span style="color:green">// Get the first matrix object of ml as mo</span>
+</pre></li>
+<li>Give the name of the <code>Layer</code> object<pre>
+Column col("[Book1]Sheet1", 0);
+MatrixObject mo("[MBook1]MSheet1", 0);
 </pre>
-
-
 
 </li>
 </ol>
@@ -500,7 +502,7 @@ Session:
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
