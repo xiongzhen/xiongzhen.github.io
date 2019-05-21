@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="XIONG Zhen">
 <meta property="og:description" content="More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-12-11T10:05:14.400Z">
+<meta property="og:updated_time" content="2019-05-21T09:18:02.874Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Dataset Accessing in Origin C">
 <meta name="twitter:description" content="More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk">
@@ -321,6 +321,7 @@
 
       
         <p>More than mouse clicking and dragging to perform analysis and create graphs in Origin/OriginPro (simply “Origin” hereafter in this post), provided also includes the power of programming, be it LabTalk the scripting language, Origin C the ANSI C closely based programming language with C++ features, or Python the popular and convenient tool. In this post, I would described the most basic operations using Origin C: how to access dataset. It is targeted at whoever has experience in C/C++ programming and is familiar with Origin.</p>
+<p>In this post, I’ll describe some basic concepts of dataset in Origin C and show you how to get dataset as an array in the form of vector (1-D) / matrix (2-D).</p>
 <h3 id="Dataset"><a href="#Dataset" class="headerlink" title="Dataset"></a>Dataset</h3><p>Before starting out to write codes, it would be helpful to understand what “dataset” means in Origin. Typically, there are two kinds of datasets: one that you can see directly in a view, either a Worksheet or a Matrix Sheet, which is called <code>associated dataset</code> or <code>dataset</code> for convenience; the other is call <code>loose dataset</code> which is not associated with any view.</p>
 <p>You can list all datasets by LabTalk command <code>list s</code> where <code>s</code> is short for <code>series</code> now known as <code>dataset</code>:</p>
 <pre>
@@ -341,36 +342,22 @@ Session:
 </uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></uid></addr></pre>
 
 <p>To refer to a particular dataset in Origin C, you can create an instance of <code>Dataset</code>, one of the composite data types supported, with the corresponding name:</p>
-<p><code>Dataset ds(&quot;Book1_A&quot;)</code></p>
-<p>However, <code>Dataset</code> is not recommended. It does not support string array well. For example, in the above example, if “Book1_A” refers to a worksheet column of text type, ds is invalid. It’s also important to tell if a dataset in session scope or in project scope, to get the worksheet column a dataset belongs to, etc. In practice, the following classes are recommended to access dataset in Origin C:</p>
-<ol>
-<li>DataObject<br>An instance of <code>DataObject</code> is something you can see directly in your Origin project, for example, a worksheet column and a matrix. You cannot create such instances referring to loose datasets.<div style="color:blue">Given a DataObject instance, you can always create an instance of DatasetObject and get its data as vector/matrix. However, the opposite is not guarantteed. Such case we will discuss later.</div></li>
-<li>DatasetObject<br>You may take it as an alias of <code>Dataset</code>. However, it supports more operation like masking/unmasking data and provides access to non numeric datasets, etc. It’s always possible to create an <code>DatasetObject</code> instance referring to a dataset, be it loose dataset or not.<div style="color:blue">Given a DatasetObject instance, you can get the corresponding DataObject instance only if it’s not a loose dataset. It’s always possible to get its data as vector/matrix.</div></li>
-<li>vector and matrix<br>These are classes about composite data type, while the above two are internal Origin objects. Vector and matrix focus more on “data” itself. In other words, mathematical operations.<br><div style="color:blue">Given a vector/matrix, you can create an instance of DatasetObject from it but it’s impossible to find its corresponding instance of DataObject.</div>This is reasonable. If a vector/matrix refers to an instance of DataObject, it must be created explicitly. You should pass an DataObject instead of a vector/matrix.</li>
-</ol>
-<h4 id="DataObject"><a href="#DataObject" class="headerlink" title="DataObject"></a>DataObject</h4><p>Class DataObject is derived from class DataObjectBase, containing only one dataset. Derived from class DataObjectBase as well is class DataPlot, which may have multiple datasets. I’ll write another post to discuss it. Right now, just focus on one <code>dataset</code>.</p>
-<p>In most cases, data in a project is saved as either columns in worksheet or matrices in matrix sheet, they are call <code>Column</code> and <code>MatrixObject</code> respectively.</p>
-<p>For those who are not familar with the class hierarchy of Origin C, it might be confusing to understand <code>Column</code> or <code>MatrixObject</code>.</p>
-<ol>
-<li>Typically, a window in Origin is called a Page. The a spreadsheet with columns are called <code>WorksheetPage</code> while a sheet with matrices are called <code>MatrixPage</code>.</li>
-<li>Both <code>WorksheetPage</code> and <code>MatrixPage</code> can have more than one <code>Layer</code>, they are called <code>Worksheet</code> and <code>MatrixLayer</code> respectively.</li>
-<li>Each <code>Layer</code> can hold more than one datasets. In <code>Worksheet</code>, it’s called <code>Column</code> holding 1-D dataset. In <code>MatrixLayer</code>, it’s called <code>MatrixObject</code> holding 2-D dataset.</li>
-</ol>
-<p>Usually, to create a <code>Column</code> object or a <code>MatrixObject</code>, You should first have the corresponding <code>Layer</code> object. I list most commonly used cases as following:</p>
-<ol>
-<li>Given the <code>Layer</code> object<pre>
-<div style="color:green">// Worksheet wks</div>Column col(wks, 0);  <span style="color:green">// Get the first column of wks as col</span>
-<div></div>
-<div style="color:green">// MatrixLayer ml;</div>MatrixObject mo(ml, 0);  <span style="color:green">// Get the first matrix object of ml as mo</span>
-</pre></li>
-<li>Give the name of the <code>Layer</code> object<pre>
-Column col("[Book1]Sheet1", 0);
-MatrixObject mo("[MBook1]MSheet1", 0);
-</pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Dataset ds(&quot;Book1_A&quot;)</span><br></pre></td></tr></table></figure>
+<p>However, <code>Dataset</code> is not recommended in Origin C. When programming, the input data usually is either from external source (e.g. file or data stream) or from Origin object (e.g. worksheet or matrixsheet), so is the output. A <code>Dataset</code> is simply a collection of numbers and does not tell much about what it belongs to. On the other hand, it does not support string array well.</p>
+<p>Usually, I use Origin C to read some data from a worksheet/matrixsheet and save the results to a worksheet/matrixsheet. Worksheets and matrixsheets are contains of datasets. </p>
+<p>A worksheet may have multiple columns. Each column is associated with a 1-D dataset, called <code>vector</code>.<br>A matrixsheet may have multiple matries. Each matrix is associated with a 2-D dataset, called <code>matrix</code>.<br>Data assessing in Origin C is mainly about reading and writing <code>vectors</code> and <code>matrices</code>.</p>
+<h3 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h3><p>To access to dataset associated with a worksheet column, the first step is accessing to the associated target.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// To access to worksheet</span><br><span class="line">Worksheet wks(&quot;[Book1]Sheet1&quot;);</span><br><span class="line"> </span><br><span class="line">// To access to column</span><br><span class="line">Column col(wks, 0);</span><br></pre></td></tr></table></figure>
+<p>A worksheet column may hold texts or numbers or both.</p>
+<p>For texts:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// read</span><br><span class="line">vector&lt;string&gt; vstr;</span><br><span class="line">col.GetStringArray(vstr)</span><br><span class="line"></span><br><span class="line">// write</span><br><span class="line">col.PutStringArray(vstr);</span><br></pre></td></tr></table></figure></p>
+<p>For numbers:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// read</span><br><span class="line">vectorbase&amp; vb = col.GetDataObject();</span><br><span class="line"></span><br><span class="line">// write</span><br><span class="line">// vector&lt;double&gt; xs = &#123;1, 2, 3&#125;</span><br><span class="line">vb = xs;</span><br></pre></td></tr></table></figure></p>
+<p>If the column is mixed with texts and numbers, the <code>GetDataObject()</code> returns a reference to a numeric array which replaces a string with a missing value.<br>In the above example, changes make to <code>vb</code> would alter the values in the column.</p>
+<p>Usually the output results are not to be saved back as the input source. This involves creating new datasets: create new columns in a worksheet, and set the columns with vectors:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// Create a worksheet if necessary</span><br><span class="line">Worksheet wks;</span><br><span class="line">wks.Create();</span><br><span class="line"></span><br><span class="line">// Create 4 columns: 4 datasets created and associated to them</span><br><span class="line">wks.SetSize(-1, 4);</span><br><span class="line"></span><br><span class="line">// Get a reference to one of the datasets</span><br><span class="line">Column colA(wks, 0);</span><br><span class="line">vectorbase&amp; vb = colA.GetDataObject();</span><br><span class="line"></span><br><span class="line">// Set values to the referenced dataset</span><br><span class="line">// vector&lt;double&gt; xs = &#123;1, 2, 3&#125;;</span><br><span class="line">vb = xs;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Matrix"><a href="#Matrix" class="headerlink" title="Matrix"></a>Matrix</h3><p>Similar to vector, but it is saved in a matrixsheet and must be numeric. Instead of columns, this 2-D matriices called <code>MatrixObjects</code>.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// to access to a matrixsheet</span><br><span class="line">MatrixLayer ml(&quot;[MBook1]MSheet1&quot;);</span><br><span class="line"></span><br><span class="line">// to access to a matrixobject</span><br><span class="line">MatrixObject mo(ml, 0);</span><br><span class="line"></span><br><span class="line">// read</span><br><span class="line">matrixbase&amp; mb = mo.GetDataObject()</span><br></pre></td></tr></table></figure>
+<p>Worksheet columns may hold datasets of different length. MatrixObject is different from that. All MatrixObjects in a MatrixSheet must be of identical size. To write 2-D matrix to a MatrixObject, their sizes must fit each other.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// Create a matrixsheet if necessary</span><br><span class="line">MatrixLayer ml;</span><br><span class="line">ml.Create()</span><br><span class="line"></span><br><span class="line">// Prepare the shape: 1 MatrixObject associated with a 2-D dataset (3 rows and 4 columns)</span><br><span class="line">ml.SetSize(1, 3, 4)</span><br><span class="line"></span><br><span class="line">// Get a reference to one of the dataset</span><br><span class="line">MatrixObject mo(ml, 0)</span><br><span class="line">matrixbase&amp; mb = mo.GetDataObject();</span><br><span class="line"></span><br><span class="line">// Set values to the referenced dataset</span><br><span class="line">// matrix&lt;double&gt; mat(3, 4);</span><br><span class="line">mb = mat;</span><br></pre></td></tr></table></figure>
 
-</li>
-</ol>
-<h4 id="DatasetObject"><a href="#DatasetObject" class="headerlink" title="DatasetObject"></a>DatasetObject</h4><h4 id="vector-amp-matrix"><a href="#vector-amp-matrix" class="headerlink" title="vector &amp; matrix"></a>vector &amp; matrix</h4>
       
     </div>
     
@@ -535,7 +522,7 @@ MatrixObject mo("[MBook1]MSheet1", 0);
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dataset"><span class="nav-number">1.</span> <span class="nav-text">Dataset</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DataObject"><span class="nav-number">1.1.</span> <span class="nav-text">DataObject</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DatasetObject"><span class="nav-number">1.2.</span> <span class="nav-text">DatasetObject</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vector-amp-matrix"><span class="nav-number">1.3.</span> <span class="nav-text">vector &amp; matrix</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Dataset"><span class="nav-number">1.</span> <span class="nav-text">Dataset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Vector"><span class="nav-number">2.</span> <span class="nav-text">Vector</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Matrix"><span class="nav-number">3.</span> <span class="nav-text">Matrix</span></a></li></ol></div>
             
 
           </div>
@@ -555,7 +542,7 @@ MatrixObject mo("[MBook1]MSheet1", 0);
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
