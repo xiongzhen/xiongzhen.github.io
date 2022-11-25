@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="programming,assembly,x64,NASM," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="I wanted to learn assembly a long time ago. I tried the __asm when it was supported by MSVC x86 before my becoming a programer. The support was dropped when it comes to x64. I thought I would never ha">
+<meta name="keywords" content="programming,assembly,x64,NASM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Learning Assembly: Hello World!">
+<meta property="og:url" content="https://xiongzhen.github.io/2022/11/24/Learning-Assembly-Hello-World/index.html">
+<meta property="og:site_name" content="XIONG Zhen">
+<meta property="og:description" content="I wanted to learn assembly a long time ago. I tried the __asm when it was supported by MSVC x86 before my becoming a programer. The support was dropped when it comes to x64. I thought I would never ha">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2022-11-25T09:08:33.683Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Learning Assembly: Hello World!">
+<meta name="twitter:description" content="I wanted to learn assembly a long time ago. I tried the __asm when it was supported by MSVC x86 before my becoming a programer. The support was dropped when it comes to x64. I thought I would never ha">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://xiongzhen.github.io/2022/11/24/Learning-Assembly-Hello-World/"/>
+
+
+
+
+
+  <title>Learning Assembly: Hello World! | XIONG Zhen</title>
+  
+
+
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-45571639-3', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">XIONG Zhen</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Do all things with love.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xiongzhen.github.io/2022/11/24/Learning-Assembly-Hello-World/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="XIONG Zhen">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="XIONG Zhen">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Learning Assembly: Hello World!</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-11-24T00:00:00+08:00">
+                2022-11-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2022/11/24/Learning-Assembly-Hello-World/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2022/11/24/Learning-Assembly-Hello-World/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>I wanted to learn assembly a long time ago. I tried the <code>__asm</code> when it was supported by MSVC x86 before my becoming a programer. The support was dropped when it comes to x64. I thought I would never have the chance to touch assembly again.</p>
+<h2 id="Assembly-the-code"><a href="#Assembly-the-code" class="headerlink" title="Assembly: the code!"></a>Assembly: the code!</h2><p>However, here I am.</p>
+<p>I decided to take it seriouse, building something really works: some simple library about math.</p>
+<p>After playing with the MASM for a few moment, I decided to use NASM instead (after reading <a href="https://sonictk.github.io/asm_tutorial/" target="_blank" rel="noopener">Understanding Windows x64 Assembly</a>).</p>
+<h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p>Here is my first piece of assembly saved in file <code>f64s_sum.asm</code>:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">bits 64</span><br><span class="line">default rel</span><br><span class="line"></span><br><span class="line">segment .data</span><br><span class="line">    f64pnan        dq   0x7fffffffffffffff                 ; positive NaN</span><br><span class="line">    f64nnan        dq   0xffffffffffffffff                 ; negative NaN</span><br><span class="line">    f64pi          dq   3.14159265358979323846             ; pi</span><br><span class="line">    </span><br><span class="line">segment .text</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">global _DllMainCRTStartup</span><br><span class="line">_DllMainCRTStartup:</span><br><span class="line">    mov rax, 1</span><br><span class="line">    ret</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line"></span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</span><br><span class="line">; double f64s_sum(uint64_t n, const double* p)</span><br><span class="line">;     n: rcx</span><br><span class="line">;     p: rdx</span><br><span class="line">;</span><br><span class="line">global f64s_sum</span><br><span class="line">export f64s_sum</span><br><span class="line">f64s_sum:</span><br><span class="line">    xorpd          xmm0, xmm0</span><br><span class="line">    ret</span><br><span class="line">;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;</span><br></pre></td></tr></table></figure>
+<h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><p>I wanted to build a DLL file which I would like to call from my Origin C functions. NASM does not build the DLL for me. Instead, it creates an <code>obj</code> file with the following command:</p>
+<pre>
+nasm -f win64 -o f64s_sum.obj f64s f64s_sum.asm
+</pre>
+It is the `linker` that creates the DLL file. I open the `x64 Native Tools Command Prompt for VS 2019`, which is fould by searching `x64 Native...` in Windows Start menu, and run the following command:
+<pre>
+link /OUT:f64s.dll f64s_sum.obj /DLL
+</pre>
+
+<p>Bingo! I have the <code>f64s.dll</code>.</p>
+<p>The DLL contains no debug info. I should have created another project for debugging. I just cannot wait to see if it works or not. But it is worthy to see if any functions get exported.</p>
+<p>The <code>command prompt</code> is open. <code>dumpbin</code>, the COFF/PE Dumper, is capable of that:</p>
+<pre>
+dumpbin /EXPORTS f64s.dll
+</pre>
+It dumps the following, suggesting the `f64s_sum` is exported and can be called from my Origin C code.
+<pre>
+Dump of file f64s.dll
+
+File Type: DLL
+
+  Section contains the following exports for f64s.dll
+
+    00000000 characteristics
+    FFFFFFFF time date stamp
+        0.00 version
+           1 ordinal base
+           1 number of functions
+           1 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00001006 f64s_sum
+
+  Summary
+
+        1000 .data
+        1000 .rdata
+        1000 .text
+</pre>
+
+<h2 id="Invoke-the-Exported-Function"><a href="#Invoke-the-Exported-Function" class="headerlink" title="Invoke the Exported Function"></a>Invoke the Exported Function</h2><p>Calling functions in a DLL from Origin C is as easy as:</p>
+<ol>
+<li>Declare the functions</li>
+<li>Invoke the functions</li>
+</ol>
+<p>I want to use the functions in my Origin C project. The following is more about programming in OriginPro.</p>
+<h3 id="Declare-the-functions-with-pragma-dll"><a href="#Declare-the-functions-with-pragma-dll" class="headerlink" title="Declare the functions with #pragma dll(...)."></a>Declare the functions with <code>#pragma dll(...)</code>.</h3><p>The <code>(...)</code>, if not empty, tells the compiler where the DLL is located. For example:</p>
+<ul>
+<li><p><code>#pragma dll(E:\repo\f64s\f64s.dll)</code></p>
+<p>  This tells the compiler where the DLL is, explicitly with the full path.</p>
+</li>
+<li><p><code>#pragma dll(f64s, header)</code></p>
+<p>  You write this code in a header file, telling the compiler that the header file and the DLL file are in the same folder.</p>
+</li>
+<li><p><code>#pragma dll(kernel32, system)</code></p>
+<p>  This tell the compiler the DLL is in the Windows system folder: <code>%WINDIR%\System32</code>.</p>
+</li>
+<li><p><code>#pragma dll(zlib, platform)</code></p>
+<p>  This seems to be used internally. It means the DLL is in a particular folder. For 32-bit Origin, the dll is in <code>&lt;OriginEXE&gt;\32Bit</code>, while 64-bit <code>&lt;OriginEXE&gt;\64Bit</code>. OriginLab delivers 64-bit Origin only in recent years and the <code>&lt;OriginEXE&gt;\32Bit</code> folder does not exist any more.</p>
+</li>
+<li><p><code>#pragma dll()</code></p>
+<p>  It is empty, telling the compiler that it ends declaring functions exported from the DLL.</p>
+</li>
+</ul>
+<p>I prefer to using a header file, having the following defined in <code>&lt;UserFilesFolder&gt;\OriginC\f64s.h</code> (and the f64s.dll is in <code>&lt;UserFilesFolder&gt;\OriginC\</code> folder):<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _F64S_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _F64S_H_</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> dll(f64s, header)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">f64s_sum</span><span class="params">(<span class="keyword">unsigned</span> __int64 n, <span class="keyword">const</span> <span class="keyword">double</span>* p)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> dll()</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">// _F64S_H_</span></span></span><br></pre></td></tr></table></figure></p>
+<h3 id="Call-the-functions-in-OriginPro"><a href="#Call-the-functions-in-OriginPro" class="headerlink" title="Call the functions in OriginPro"></a>Call the functions in OriginPro</h3><p>Let’s assume that the data is saved in a Worksheet column. This is how I sum up the values:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;origin.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"f64s.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">colsum</span><span class="params">(<span class="built_in">string</span> strSheet, <span class="keyword">int</span> nCol)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">Worksheet <span class="title">wks</span><span class="params">(strSheet)</span></span>;</span><br><span class="line">    <span class="keyword">if</span>(!wks.IsValid())</span><br><span class="line">        <span class="keyword">return</span> NANUM;</span><br><span class="line">    </span><br><span class="line">    <span class="function">Column <span class="title">col</span><span class="params">(wks, nCol)</span></span>;</span><br><span class="line">    <span class="keyword">if</span>(!col)</span><br><span class="line">        <span class="keyword">return</span>  NANUM;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// The column may or may not save the data as `double` format</span></span><br><span class="line">    <span class="comment">// so I make a copy of the data.</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; values = col.GetDataObject();</span><br><span class="line">    <span class="keyword">double</span> result = f64s_sum(values.GetSize(), values);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Call the function from <code>Script Window</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">colsum(%H, 0)=;</span><br><span class="line">// colsum(Book1, 0)=0</span><br></pre></td></tr></table></figure></p>
+<p>But wait, it actually does not work, as it always returns <code>0.0</code>!</p>
+<p>Let’s take another look at the definition of <code>f64s_sum</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">f64s_sum:</span><br><span class="line">    xorpd          xmm0, xmm0</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure></p>
+<p><code>xorpd</code>: Bitwise logical XOR of packed double precision floating-point values.</p>
+<p>In case you don’t know what <code>XOR</code> is, here is the definition about <a href="https://en.wikipedia.org/wiki/Exclusive_or" target="_blank" rel="noopener">Exclusive or (Wikipedia)</a>:</p>
+<blockquote>
+<p><strong>Exclusive or</strong> or <strong>exclusive disjunction</strong> is a <a href="https://en.wikipedia.org/wiki/Logical_connective" target="_blank" rel="noopener">logical operation</a> that is true if and only if its arguments differ (one is true, the other is false).</p>
+</blockquote>
+<p>What’s the result of <code>A XOR A</code>? <code>ZERO</code>.</p>
+<p>The function returns a <code>double</code> value. According to the <a href="https://learn.microsoft.com/en-us/cpp/build/x64-calling-convention" target="_blank" rel="noopener">x64 calling convention</a>:</p>
+<blockquote>
+<p>Non-scalar types including floats, doubles, and vector types such as <strong>m128, </strong>m128i, __m128d are returned in XMM0.</p>
+</blockquote>
+<p>Right, my code does nothing but returns <code>0.0</code>. I’ll have another post about how to sum up the values.</p>
+<p>This is the boilerplate for me to continue learning assembly.</p>
+<p>Cheers!</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/programming/" rel="tag"># programming</a>
+          
+            <a href="/tags/assembly/" rel="tag"># assembly</a>
+          
+            <a href="/tags/x64/" rel="tag"># x64</a>
+          
+            <a href="/tags/NASM/" rel="tag"># NASM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/06/04/how-to-import-data-when-SQL-Editor-does-not-show-table-names-correctly/" rel="next" title="How To Import Data When SQL Editor Does Not Show Table Names Correctly">
+                <i class="fa fa-chevron-left"></i> How To Import Data When SQL Editor Does Not Show Table Names Correctly
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">XIONG Zhen</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">64</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Assembly-the-code"><span class="nav-number">1.</span> <span class="nav-text">Assembly: the code!</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Code"><span class="nav-number">1.1.</span> <span class="nav-text">Code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build"><span class="nav-number">1.2.</span> <span class="nav-text">Build</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Invoke-the-Exported-Function"><span class="nav-number">2.</span> <span class="nav-text">Invoke the Exported Function</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Declare-the-functions-with-pragma-dll"><span class="nav-number">2.1.</span> <span class="nav-text">Declare the functions with #pragma dll(...).</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Call-the-functions-in-OriginPro"><span class="nav-number">2.2.</span> <span class="nav-text">Call the functions in OriginPro</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">XIONG Zhen</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://xiongzh.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://xiongzhen.github.io/2022/11/24/Learning-Assembly-Hello-World/';
+          this.page.identifier = '2022/11/24/Learning-Assembly-Hello-World/';
+          this.page.title = 'Learning Assembly: Hello World!';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://xiongzh.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
